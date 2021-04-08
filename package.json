@@ -4,16 +4,23 @@
   "description": "top level node server",
   "main": "index.js",
   "dependencies": {
+    "aws-sdk": "^2.836.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-handlebars": "^5.2.1",
     "fs": "0.0.1-security",
+    "hbs": "^4.1.1",
     "http": "0.0.0",
     "https": "^1.0.0",
-    "socket.io": "^2.3.0"
+    "node-cron": "^2.0.3",
+    "socket.io": "^2.4.1",
+    "sqlite3": "^5.0.1"
   },
   "devDependencies": {
     "pm2": "^4.5.0"
   },
   "scripts": {
+    "start": "node index.js",
     "restart": "pm2 startOrRestart ecosystem.config.js",
     "deploy": "pm2 deploy ecosystem.config.js production",
     "test": "echo \"Error: no test specified\" && exit 1"

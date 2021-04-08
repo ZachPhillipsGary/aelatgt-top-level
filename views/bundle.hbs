@@ -1,0 +1,73 @@
+window.addEventListener('load', (event) => {
+    // keeps this script from being loaded more than once
+    if (window.bundleDeployed && window.bundleDeployed === 1) {
+        return
+    }
+    window.bundleDeployed = 1;
+    const SSO_URL = `{{COGNITO_BASE_URL}}&redirect_uri={{REDIRECT_URL}}/signin`
+
+    // inject Google SSO metadata for Google client script
+    const createGoogleLink = () => {
+        const googleMetaName = "google-signin-client_id";
+        const exists = document.querySelector(`input[name="${googleMetaName}"]`);
+        if (exists) {
+            return exists
+        }
+        const googleMeta = document.createElement('meta');
+        googleMeta.name = googleMetaName
+        googleMeta.content = "{{GOOGLE_SSO_ID}}"
+        console.log("{{GOOGLE_SSO_ID}}")
+        document.head.appendChild(googleMeta)
+        return googleMeta
+    }
+    // Create a link to launch the SSO flow
+    const createSSOLink = () => {
+        const SSOLink = document.createElement('a');
+        SSOLink.href = SSO_URL
+        SSOLink.textContent = "Sign in with Google"
+        document.body.appendChild(SSOLink);
+    }
+    const init = () => {
+        try {
+            window.initSSO()
+        } catch (error) {
+            console.log(error)
+            setTimeout(init, 100)
+        }
+    }
+    try {
+        window.SSOSocketURL = "{{PROTOCOL}}{{BASE_URL}}"
+        const scripts = ["{{PROTOCOL}}{{BASE_URL}}/socket.io/socket.io.js", "https://apis.google.com/js/platform.js",
+            "{{PROTOCOL}}{{BASE_URL}}/scripts.js"
+        ];
+
+        scripts.forEach(script => {
+            const scriptElm = document.createElement('script');
+            scriptElm.src = script;
+            document.body.appendChild(scriptElm);
+        });
+
+        // if we don't have token, attempt login
+        if (window.location.href.indexOf("access_token") == -1) {
+            const signin = confirm("Sign in?");
+            if (signin == true) {
+                window.location.href = SSO_URL
+            }
+        } else if (Object.keys(window).includes("submitEmail")) {
+            try {
+                const googleId = createGoogleLink()
+                let waitTime = 0;
+                if (!Object.keys(window).includes("initSSO")) {
+                    waitTime = 300
+                }
+                setTimeout(init, waitTime)
+
+            } catch (error) {
+                console.error(error)
+            }
+
+        }
+    } catch (error) {
+        console.log("Error", error)
+    }
+});
